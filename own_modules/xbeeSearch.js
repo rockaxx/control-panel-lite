@@ -74,10 +74,9 @@ async function findXbeePort() {
                   console.log(`Found the correct XBee on port: ${serialport.path}`);
                   bridge.found = true;
                   bridge.isInitializing = false; // Reset flag upon successful connection
-                  if (run >= 1) {
-                      sendSignalToClient('RESET'); // Send RESET on reconnection
-                  }
-                  run += 1;
+                        sendSignalToClient('RESET');
+                    
+                    run += 1;
                   handshakeOk = true;
 
                   // Return the connected serial port

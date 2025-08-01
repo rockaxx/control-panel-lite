@@ -9,7 +9,7 @@ const texts = {
     en: {
         controlTitle: "Lights Control",
         windowTitle: "Window Control",
-        intTitle: "Light Intensity",
+        intTitle: "Light Turn ON/OFF",
         lightOpen: ["Hall 1", "Hall 2", "Hall 3", "Warehouse"],
         hallOpen: ["Open Hall 1", "Open Hall 2", "Open Hall 3", "Open Warehouse"],
         hallClose: ["Close Hall 1", "Close Hall 2", "Close Hall 3", "Close Warehouse"],
@@ -18,6 +18,7 @@ const texts = {
         statusWindowOpened: "Now opened",
         statusWindowClosed: "Now closed",
         setDefault: "Set default",
+        setSBS: "Set SBS path",
         allWindowsOpened: "All windows are opened currently",
         allWindowsClosed: "All windows are closed currently",
         relay1On: "Relay 1 automatic is now turned on",
@@ -36,12 +37,15 @@ const texts = {
         auto: "Automatic mode",
         manual: "Manual Mode",
         submitButton: "Submit",
-        cancelButton: "Cancel"
+        cancelButton: "Cancel",
+        turnOn: "Turn On",
+        turnOff: "Turn Off",
+        setSBSOff: "Turn OFF SBS path"
     },
     sk: {
         controlTitle: "Ovládanie Svetiel",
         windowTitle: "Ovládanie Okien",
-        intTitle: "Intenzita Svetla",
+        intTitle: "Zapnúť/Vypnúť Osvetlenie",
         lightOpen: ["Hala 1", "Hala 2", "Hala 3", "Sklad"],
         hallOpen: ["Otvoriť Halu 1", "Otvoriť Halu 2", "Otvoriť Halu 3", "Otvoriť Sklad"],
         hallClose: ["Zatvoriť Halu 1", "Zatvoriť Halu 2", "Zatvoriť Halu 3", "Zatvoriť Sklad"],
@@ -50,6 +54,7 @@ const texts = {
         statusWindowOpened: "Práve sú otvorené",
         statusWindowClosed: "Práve sú zatvorené",
         setDefault: "Nastaviť predvolené",
+        setSBS: "Zapnúť SBS uličku",
         allWindowsOpened: "Práve teraz sú otvorené všetky okná",
         allWindowsClosed: "Práve teraz sú zatvorené všetky okná",
         relay1On: "Automatické otváranie v hale 1 je teraz zapnuté",
@@ -68,20 +73,24 @@ const texts = {
         auto: "Automatický mód",
         manual: "Manuálny mód",
         submitButton: "Nastaviť",
-        cancelButton: "Zrušiť"
+        cancelButton: "Zrušiť",
+        turnOn: "Zapnúť",
+        turnOff: "Vypnúť",
+        setSBSOff: "Vypnúť SBS uličku"
     },
     hu: {
         controlTitle: "Lámpa Vezérlés",
         windowTitle: "Ablak Vezérlés",
-        intTitle: "Lámpa Fényerő Beállítás",
+        intTitle: "Lámpa Bekapcsolás/Kikapcsolás",
         lightOpen: ["1. Csarnok", "2. Csarnok", "3. Csarnok", "Raktár"],
         hallOpen: ["Nyitás 1. Csarnok", "Nyitás 2. Csarnok", "Nyitás 3. Csarnok", "Nyitás Raktár"],
         hallClose: ["Zárás 1. Csarnok", "Zárás 2. Csarnok", "Zárás 3. Csarnok", "Zárás Raktár"],
         statusActive: "",
-        statusInactive: "Inaktív",
+        statusInactive: "Ki volt kapcsolva",
         statusWindowOpened: "Most nyitva van",
         statusWindowClosed: "Most zárva van",
         setDefault: "Alapértelmezett beállítása",
+        setSBS: "Kapcsolás SBS utca",
         allWindowsOpened: "Jelenleg minden ablak nyitva van",
         allWindowsClosed: "Jelenleg minden ablak zárva van",
         relay1On: "A 1. hala ablak automatikája most be van kapcsolva",
@@ -100,7 +109,10 @@ const texts = {
         auto: "Automata mód",
         manual: "Manuális mód",
         submitButton: "Allítani",
-        cancelButton: "Mégse"
+        cancelButton: "Mégse",
+        turnOn: "Bekapcsolás",
+        turnOff: "Kikapcsolás",
+        setSBSOff: "Kikapcsolás SBS utca"
     }
 };
 
@@ -350,13 +362,131 @@ let buttonStatus = {
     'set-4':false
 };
 
-document.getElementById('set-def').addEventListener('click', function () {
+/*document.getElementById('set-def').addEventListener('click', function () {
     let message = 'set-def';
     console.log(message);
     sendToServer(message);
     sendLightStatus(9, true, -1);
     (9, false);
+});*/
+
+let sbsCountdownInterval = null;
+let sbsRemaining = null;
+let sbsStatusSpan = null;
+let sbsActive = false;
+
+
+document.getElementById('set-sbs').addEventListener('click', function () {
+    const button = this;
+
+    if (sbsActive) {
+        // Deaktivovať SBS
+        const message = 'set-sbs-off';
+        console.log(message);
+        sendToServer(message);
+
+        if (sbsCountdownInterval) clearInterval(sbsCountdownInterval);
+        sbsCountdownInterval = null;
+        sbsRemaining = null;
+        sbsActive = false;
+
+        if (!sbsStatusSpan) {
+            sbsStatusSpan = document.createElement('span');
+            sbsStatusSpan.className = 'status-text-sbs';
+            sbsStatusSpan.style.display = 'block';
+            sbsStatusSpan.style.color = 'orange';
+            sbsStatusSpan.style.fontSize = '14px';
+            sbsStatusSpan.style.fontWeight = 'bold';
+            sbsStatusSpan.style.marginTop = '5px';
+            button.appendChild(sbsStatusSpan);
+        }
+
+        sbsStatusSpan.textContent = {
+            sk: 'SBS bolo deaktivované',
+            hu: 'SBS kikapcsolva',
+            en: 'SBS was deactivated'
+        }[currentLang] || 'SBS was deactivated';
+
+        // ⚠️ Obnov pôvodný názov tlačidla po deaktivácii
+        button.textContent = texts[currentLang].setSBS;
+        button.appendChild(sbsStatusSpan);
+
+        setTimeout(() => {
+            if (sbsStatusSpan) {
+                sbsStatusSpan.remove();
+                sbsStatusSpan = null;
+            }
+        }, 3000);
+    } else {
+        // Aktivovať SBS
+        const message = 'set-sbs';
+        console.log(message);
+        sendToServer(message);
+        sbsActive = true;
+
+        // ⚠️ Nastav text tlačidla na "Vypnúť SBS uličku"
+        this.textContent = texts[currentLang].setSBSOff;
+
+        startSbsCountdown(60);
+    }
 });
+
+function startSbsCountdown(minutes) {
+    if (sbsCountdownInterval) clearInterval(sbsCountdownInterval);
+
+    const button = document.getElementById('set-sbs');
+    sbsRemaining = minutes;
+    sbsActive = true;
+
+    sbsStatusSpan = button.querySelector('.status-text-sbs');
+    if (!sbsStatusSpan) {
+        sbsStatusSpan = document.createElement('span');
+        sbsStatusSpan.className = 'status-text-sbs';
+        sbsStatusSpan.style.display = 'block';
+        sbsStatusSpan.style.color = 'orange';
+        sbsStatusSpan.style.fontSize = '14px';
+        sbsStatusSpan.style.fontWeight = 'bold';
+        sbsStatusSpan.style.marginTop = '5px';
+        button.appendChild(sbsStatusSpan);
+    }
+
+    updateSbsStatusText();
+
+    sbsCountdownInterval = setInterval(() => {
+        sbsRemaining--;
+
+        if (sbsRemaining > 0) {
+            updateSbsStatusText();
+        } else {
+            clearInterval(sbsCountdownInterval);
+            sbsCountdownInterval = null;
+            sbsActive = false;
+            sbsRemaining = null;
+
+            // 🟢 Restore button label to "Turn ON SBS path"
+            const defaultText = texts[currentLang].setSBS;
+            button.innerHTML = defaultText;
+
+            if (sbsStatusSpan) {
+                sbsStatusSpan.remove();
+                sbsStatusSpan = null;
+            }
+        }
+    }, 60 * 1000); // 1 minute interval
+}
+
+function updateSbsStatusText() {
+    if (!sbsStatusSpan || sbsRemaining == null) return;
+
+    const minsLeft = sbsRemaining;
+    const langTexts = {
+        sk: `Bude zapnuté ešte ${minsLeft} minút${minsLeft === 1 ? 'u' : minsLeft < 5 ? 'y' : ''}`,
+        hu: `Még ${minsLeft} percig bekapcsolva lesz`,
+        en: `Will remain ON for ${minsLeft} minute${minsLeft === 1 ? '' : 's'}`
+    };
+    sbsStatusSpan.textContent = langTexts[currentLang] || langTexts['en'];
+}
+
 
 //WINDOWS
 
@@ -513,12 +643,52 @@ function markProcessing(id) {
 
 // Add this to your
 document.addEventListener('DOMContentLoaded', () => {
-    const overlay = document.querySelector('.overlay');
     const intensityOverlay = document.getElementById('intensity-overlay');
-    const intensitySlider = document.getElementById('intensity-slider');
+    const overlay = document.querySelector('.overlay');
     const intensityValue = document.getElementById('intensity-value');
     let selectedButtonId = null; // To store the ID of the clicked button
     let intensitySubmitted = false; // Track if the intensity popup was submitted
+
+
+    const intensityOnButton = document.getElementById('intensity-on');
+    const intensityOffButton = document.getElementById('intensity-off');
+
+    intensityOnButton.addEventListener('click', () => {
+    console.log('Klikol si na ZAPNÚŤ');
+
+    if (selectedButtonId) {
+        const hallMap = { 'set-1': 1, 'set-2': 2, 'set-3': 3, 'set-4': 4 };
+        const hallNumber = hallMap[selectedButtonId];
+
+        console.log('selectedButtonId:', selectedButtonId, 'hall:', hallNumber);
+
+        sendToServer(selectedButtonId, 80);
+        sendLightStatus(hallNumber, true, 80);
+
+        intensityOverlay.style.display = 'none';
+    } else {
+        console.warn('selectedButtonId je null – asi si predtým neklikol na žiadne tlačidlo!');
+    }
+    });
+
+    intensityOffButton.addEventListener('click', () => {
+    console.log('Klikol si na VYPNÚŤ');
+
+    if (selectedButtonId) {
+        const hallMap = { 'set-1': 1, 'set-2': 2, 'set-3': 3, 'set-4': 4 };
+        const hallNumber = hallMap[selectedButtonId];
+
+        console.log('selectedButtonId:', selectedButtonId, 'hall:', hallNumber);
+
+        sendToServer(selectedButtonId, 0);
+        sendLightStatus(hallNumber, true, 0);
+
+        intensityOverlay.style.display = 'none';
+    } else {
+        console.warn('selectedButtonId je null – asi si predtým neklikol na žiadne tlačidlo!');
+    }
+    });
+
 
     function disableButtons() {
         document.querySelectorAll('button').forEach(button => {
@@ -570,32 +740,20 @@ document.addEventListener('DOMContentLoaded', () => {
     allButtons.forEach(button => {
         button.addEventListener('click', async () => {
             if (button.id === 'set-1' || button.id === 'set-2' || button.id === 'set-3' || button.id === 'set-4') {
-                selectedButtonId = button.id; // Store the ID of the clicked button
+                selectedButtonId = button.id;
                 intensityOverlay.style.display = 'flex';
-                
-                const hallId = button.id.split('-')[1]; // Extract the last character to get the hall ID
-                const data = await fetchlights();
-                
-                if (data && data[hallId]) {
-                    intensityValue.textContent = data[hallId].intensity + '%';
-                    intensitySlider.value = data[hallId].intensity;
-                } else {
-                    console.error('Failed to update intensity');
-                    intensityValue.textContent = 'N/A';
-                }
-    
-                intensitySubmitted = false; // Reset the submission flag
+                // Tu už nič netreba nastavovať – žiadne intensitySlider ani fetch
             } else {
-                // Show loading screen for other buttons
-                if(button.id === 'closeIntensityPopup') {return;}
+                // Ostatné tlačidlá zobrazia loading overlay na 10s
+                if (button.id === 'closeIntensityPopup') return;
                 overlay.style.display = 'flex';
                 setTimeout(() => {
                     overlay.style.display = 'none';
                 }, 10000);
-                // Add other actions for non-specific buttons here if needed
             }
         });
     });
+
 
     function closeIntensityPopup() {
         intensityOverlay.style.display = 'none';
@@ -637,20 +795,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    document.getElementById('intensity-submit').addEventListener('click', submitIntensity);
+//    document.getElementById('intensity-submit').addEventListener('click', submitIntensity);
 
     document.getElementById('closeIntensityPopup').addEventListener('click', () => {
         closeIntensityPopup();
         intensitySubmitted = false; // Ensure the submission flag is false if cancelled
     });
 
-    // Update the intensity value display
-    intensitySlider.addEventListener('input', () => {
-        intensityValue.textContent = `${intensitySlider.value}%`;
-    });
 
-    // Set the slider step to 10
-    intensitySlider.setAttribute('step', 10);
 
     // Translation
     const flags = document.querySelectorAll('.flag');
@@ -667,10 +819,9 @@ document.addEventListener('DOMContentLoaded', () => {
             updateButtonText('set-3', texts[lang].lightOpen[2], 'status-3');
             updateButtonText('set-4', texts[lang].lightOpen[3], 'status-4');
             
-            updateButtonText('intensity-title', texts[lang].intTitle);
-            updateButtonText('intensity-submit', texts[lang].submitButton);
-            updateButtonText('closeIntensityPopup', texts[lang].cancelButton);
-    
+            document.getElementById('intensity-title').textContent = texts[lang].intTitle;
+            document.getElementById('intensity-on').textContent = texts[lang].turnOn;
+            document.getElementById('intensity-off').textContent = texts[lang].turnOff;
             updateButtonText('hall-1-open', texts[lang].hallOpen[0], 'hall-1-status-open');
             updateButtonText('hall-2-open', texts[lang].hallOpen[1], 'hall-2-status-open');
             updateButtonText('hall-3-open', texts[lang].hallOpen[2], 'hall-3-status-open');
@@ -679,14 +830,27 @@ document.addEventListener('DOMContentLoaded', () => {
             updateButtonText('hall-2-close', texts[lang].hallClose[1]);
             updateButtonText('hall-3-close', texts[lang].hallClose[2]);
             updateButtonText('hall-4-close', texts[lang].hallClose[3]);
-            document.getElementById('set-def').textContent = texts[lang].setDefault;
+            //document.getElementById('set-def').textContent = texts[lang].setDefault;
+            const sbsBtn = document.getElementById('set-sbs');
+            const sbsSpan = sbsBtn.querySelector('.status-text-sbs');
+
+            // ✔ Podmienene nastav správny text
+            if (sbsActive) {
+                sbsBtn.innerHTML = texts[lang].setSBSOff; // "Kikapcsolás" variant
+            } else {
+                sbsBtn.innerHTML = texts[lang].setSBS;    // "Kapcsolás" variant
+            }
+
+            if (sbsSpan) sbsBtn.appendChild(sbsSpan);
+            if (sbsRemaining != null) updateSbsStatusText();
 
             //updateWindowsAutoStatus();
             checkAllWindowsStatus();
             fetchXbeeData();
             fetchLightStatus();
             updateStatusTexts();
-    
+            if (sbsRemaining != null) updateSbsStatusText();
+
             // Force the correct text for window buttons after all updates
             ['hall-1-status-open', 'hall-2-status-open', 'hall-3-status-open', 'hall-4-status-open'].forEach(spanId => {
                 const statusElement = document.getElementById(spanId);
@@ -815,6 +979,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
                 // Ensure 'processing' class is added
                 statusElement.classList.add('processing');
+                if (statusElement.classList.contains('processing') &&
+                    !statusElement.hasAttribute('data-processing-start')) {
+                    statusElement.setAttribute('data-processing-start', Date.now());
+                }
             }
         } else {
             // If not processing, simply update to the normal state
@@ -833,8 +1001,49 @@ document.addEventListener('DOMContentLoaded', () => {
             statusElement.classList.remove('processing');
         }
     }
-    
-    
+    function cleanupStuckProcessing() {
+        const now = Date.now();
+        const stuckLimit = 20000;
+
+        const windowButtons = [
+            'hall-1-status-open',
+            'hall-2-status-open',
+            'hall-3-status-open',
+            'hall-4-status-open'
+        ];
+
+        windowButtons.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el || !el.classList.contains('processing')) return;
+
+            const start = el.getAttribute('data-processing-start');
+            if (!start) return;
+
+            const elapsed = now - parseInt(start, 10);
+
+            console.log(`${id} has been processing for ${Math.floor(elapsed / 1000)} seconds.`);
+
+            if (elapsed >= stuckLimit) {
+                console.warn(`FORCE-REMOVING processing on ${id}`);
+
+                el.classList.remove('processing');
+                el.removeAttribute('data-processing-start');
+
+                const currentStatus = relayStatus[id] || '';
+                const finalText = currentStatus === 'Y'
+                    ? texts[currentLang].statusWindowOpened
+                    : texts[currentLang].statusWindowClosed;
+
+                el.textContent = finalText;
+
+                el.classList.remove('active', 'inactive');
+                el.classList.add(currentStatus === 'Y' ? 'active' : 'inactive');
+            }
+        });
+    }
+
+    setInterval(cleanupStuckProcessing, 1000); // každú sekundu kontrola
+
     function handleMessage(message) {
         const relayStatusMessages = message.split(';');
         relayStatusMessages.forEach(status => {
@@ -980,7 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 const serverTime = new Date(data.message);
-                checkTimeAndToggleButtons(serverTime);
+                //checkTimeAndToggleButtons(serverTime);
             })
             .catch(error => {
                 console.error('Error fetching time:', error);
@@ -1001,45 +1210,24 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchTimeAndCheck();
     }
 
-    initializeButtons();
+    //initializeButtons();
 
-    setInterval(fetchTimeAndCheck, 5000);
-    
-    function createWebSocket() {
-        let socket = new WebSocket('ws://localhost:8080');
-    
-        socket.addEventListener('open', () => {
-            console.log("WebSocket connected.");
-        });
-    
-        socket.addEventListener('error', (error) => {
-            console.error("WebSocket error:", error);
-        });
-    
-        socket.addEventListener('close', () => {
-            console.warn("WebSocket disconnected, reconnecting in 5 seconds...");
-            setTimeout(createWebSocket, 5000);
-        });
-    
-        socket.addEventListener('message', function (event) {
-            console.log('Message from server:', event.data);
-            if (event.data === 'ERR44') {
-                showErrorOverlay();
-            } else if (event.data === 'RESET') {
-                resetErrorState();
-            }
-        });
-    
-        return socket;
+    //setInterval(fetchTimeAndCheck, 5000);
+
+    if (localStorage.getItem('errorActive') === 'true') {
+        showErrorOverlay();
     }
-    
-    // Restart WebSocket every 10 minutes
-    setInterval(() => {
-        console.warn("Restarting WebSocket connection to prevent freeze...");
-        socket.close();
-        createWebSocket();
-    }, 600000); // Every 10 minutes
-    
+
+    const socket = new WebSocket('ws://localhost:8080');
+
+    socket.addEventListener('message', function (event) {
+        console.log('Message from server ', event.data);
+        if (event.data === 'ERR44') {
+            showErrorOverlay();
+        } else if (event.data === 'RESET') {
+            resetErrorState();
+        }
+    });
 
     function showErrorOverlay() {
         // Show the overlay

@@ -56,16 +56,6 @@
             align-items: center;
         }
 
-        .intensity-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px; /* Softer corners */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Slightly darker shadow */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px; /* Space between elements */
-        }
 
         .button-group {
             display: flex;
@@ -169,6 +159,66 @@
             cursor: not-allowed;         /* Show not-allowed cursor */
         }
 
+
+        .big-buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .big-on {
+            background-color: rgb(99, 144, 31);
+            font-size: 22px;
+            padding: 20px 40px;
+        }
+
+        .big-off {
+            background-color: rgb(144, 31, 31);
+            font-size: 22px;
+            padding: 20px 40px;
+        }
+
+        .big-on:hover {
+            background-color: rgb(77, 118, 20);
+        }
+
+        .big-off:hover {
+            background-color: rgb(117, 20, 20);
+        }
+
+        .intensity-container {
+            position: relative; /* dôležité pre absolútnu pozíciu vnútorného tlačidla */
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            text-align: center;
+            min-width: 300px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background-color: white;
+            color: black;
+            font-size: 26px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.2);
+        }
+
+        .close-btn:hover {
+            background-color: #eee;
+            color: red;
+        }
+
+
     </style>
 </head>
 <body>
@@ -206,8 +256,13 @@
                 <button class="button set-3" id="set-3">3. Csarnok <span id="status-3" class="status-text"></span></button>
                 <button class="button set-4" id="set-4">Raktár <span id="status-4" class="status-text"></span></button>
             </div>
+            <!--
             <div class="buttons">
                 <button class="def-btn" id="set-def">Alapértelmezett beállítása</button>
+            </div>
+            -->
+            <div class="buttons">
+                <button class="def-btn" id="set-sbs">Kapcsolás SBS utca</button>
             </div>
         </div>
         <div class="category">
@@ -231,14 +286,14 @@
 
     <div class="intensity-overlay" id="intensity-overlay">
         <div class="intensity-container" id="intensity-container">
-            <h2 id="intensity-title">Lámpa Fényerő Beállítás</h2>
-            <input type="range" min="0" max="100" value="50" step="10" class="slider" id="intensity-slider">
-            <span id="intensity-value">50%</span>
-            <div class="button-group">
-                <button id="intensity-submit" class="btn">Állítani</button>
-                <button id="closeIntensityPopup" class="btn">Mégse</button>
+            <button id="closeIntensityPopup" class="btn close-btn">X</button>
+            <h2 id="intensity-title">Zapnúť/Vypnúť</h2>
+            <div class="button-group big-buttons">
+                <button class="btn big-on" id="intensity-on">Zapnúť</button>
+                <button class="btn big-off" id="intensity-off">Vypnúť</button>
             </div>
         </div>
+
     </div>
     
 
