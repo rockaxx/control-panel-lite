@@ -12,14 +12,16 @@ body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    user-select: none;
 }
 
 .category {
-    margin-bottom: 2em;
+    margin-bottom: 3em;
     box-shadow: 0px 10px 30px -5px rgba(0, 0, 0, 0.3);
     border-radius: 10px;
-    padding: 10px;
+    padding: 12px;
     background: #3a3a3a;
+    width: 80vw;
 }
 
 h2 {
@@ -68,11 +70,11 @@ h2 {
     background-color: #4c72af;
     border: none;
     color: white;
-    padding: 7px 16px;
+    padding: 9px 18px;
     text-align: center;
     text-decoration: none;
     font-size: 16px;
-    margin: 4px 2px;
+    margin: 6px 4px;
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.3s ease;
@@ -80,6 +82,7 @@ h2 {
     flex: 1; /* Ensures buttons take up equal width */
     width: 200px; /* Controls button width */
     white-space: nowrap; /* Prevents the text from wrapping */
+    height: 50px;
 }
 
 .button:hover {
