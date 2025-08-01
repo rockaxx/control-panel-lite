@@ -1,0 +1,253 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+body {
+    background-color: #2d2d2d;
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.category {
+    margin-bottom: 2em;
+    box-shadow: 0px 10px 30px -5px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 10px;
+    background: #3a3a3a;
+}
+
+h2 {
+    color: rgb(247, 218, 218);
+    font-size: 2em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+    margin-bottom: 1em;
+}
+
+#allWinStatus {
+    text-align: center;    
+}
+
+#windowsAutoStatus {
+    text-align: center;    
+}
+
+#intensity-title {
+    color:#4c4caf;
+}
+
+.def-btn {
+    background-color: #4c72af;
+    border: none;
+    color: white;
+    padding: 7px 16px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    box-shadow: 0px 10px 30px -5px rgba(0, 0, 0, 0.3);
+}
+
+.buttons {
+    display: flex;
+    justify-content: center; /* Centers buttons horizontally */
+    flex-wrap: wrap; /* Ensures the next row appears below */
+}
+
+.button {
+    background-color: #4c72af;
+    border: none;
+    color: white;
+    padding: 7px 16px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    box-shadow: 0px 10px 30px -5px rgba(0, 0, 0, 0.3);
+    flex: 1; /* Ensures buttons take up equal width */
+    width: 200px; /* Controls button width */
+    white-space: nowrap; /* Prevents the text from wrapping */
+}
+
+.button:hover {
+    background-color: #455d84;
+    transform: translateY(-2px);
+}
+
+.button:active {
+    transform: translateY(1px);
+}
+
+.open {
+    background-color: #4caf50;
+}
+.close {
+    background-color: #f44336;
+}
+
+.open:hover {
+    background-color: #68e46c;
+}
+.close:hover {
+    background-color: #6b1e19;
+}
+/* Add this to your style.css */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    display: none;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.loading-circle {
+    border: 12px solid rgba(255, 255, 255, 0.3);
+    border-top: 12px solid #fff;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    color: #fff;
+    font-size: 1.2em;
+    margin-top: 20px;
+    font-family: 'Arial', sans-serif;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.language-selector {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+}
+
+.flag {
+    width: 55px;
+    height: 32px;
+    margin: 0 5px;
+    cursor: pointer;
+}
+/* Add this to your style.css */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    display: none; /* Initially hidden */
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.loading {
+    height: 100px;
+    width: 100px;
+    border-radius: 100%;
+    border: 2px solid transparent;
+    border-color: transparent #fff transparent #fff;
+    animation: rotate-loading 1.5s linear infinite;
+}
+
+#loading-text {
+    position: absolute;
+    color: #ffffff;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    animation: loading-text-opacity 3s ease-in-out infinite;
+}
+
+@keyframes rotate-loading {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes loading-text-opacity {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.language-selector {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+}
+
+.flag {
+    width: 50px;
+    height: 32px;
+    margin: 0 5px;
+    cursor: pointer;
+}
+
+/* Gray overlay */
+.inactive-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(62, 61, 61, 0.95); /* Gray background with 80% opacity */
+    display: none;
+    flex-direction: column; /* Ensure vertical layout */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's above other content */
+}
+
+/* Grayscale filter for the body */
+.body-inactive {
+    filter: grayscale(100%);
+}
+
+#time-remain-1, #time-remain-2 {
+    color: #fff;
+    font-size: 1.5em;
+    font-weight: bold;
+    font-style: italic;
+    margin-top: 20px;
+}

@@ -1,0 +1,24 @@
+{
+  "name": "my-electron-app",
+  "version": "1.0.0",
+  "description": "My existing Node.js project wrapped with Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build-linux": "electron-packager . MyElectronApp --platform=linux --arch=x64 --overwrite --out=dist/linux"
+  },
+  "dependencies": {
+    "@serialport/list": "^12.0.0",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "path": "^0.12.7",
+    "serialport": "^12.0.0",
+    "socket.io-client": "^4.7.5",
+    "xbee-api": "^0.6.0"
+  },
+  "devDependencies": {
+    "electron": "^25.3.1",
+    "electron-packager": "^17.1.2"
+  }
+}

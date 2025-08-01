@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Panel Lite</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .status-badge {
+            display: inline-block;
+            padding: 0.5em 1em;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: white;
+            border-radius: 0.5em;
+            margin-left: 1em;
+        }
+        .status-closed {
+            background-color: red;
+        }
+        .status-open {
+            background-color: green;
+        }
+
+        .status-text {
+            display: block;
+            font-weight: bold;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .status-text.active {
+            color: lightgreen;
+        }
+        .status-text.inactive {
+            color: rgb(165, 0, 0);
+        }
+        .status-text.processing {
+            color: rgb(136, 89, 0);
+        }
+        .disabled {
+            opacity: 0.1;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .intensity-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+            z-index: 200; /* Ensure it's above other content */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .intensity-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px; /* Softer corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Slightly darker shadow */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px; /* Space between elements */
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            width: 100%; /* Ensures buttons take the full width of the container */
+        }
+
+        #intensity-value {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color:black;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 40px; /* Increased height for better usability */
+            background: #ddd;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+            border-radius: 10px;
+            margin: 20px 0; /* Add margin for better spacing */
+        }
+
+        .slider:hover {
+            opacity: 1;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px; /* Increased thumb size */
+            height: 40px; /* Increased thumb size */
+            background: #007BFF;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 40px; /* Increased thumb size */
+            height: 40px; /* Increased thumb size */
+            background: #007BFF;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn {
+            color: white; /* Text color */
+            border: none; /* No border */
+            border-radius: 5px; /* Rounded corners */
+            padding: 10px 20px; /* Padding */
+            font-size: 16px; /* Font size */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: background-color 0.3s ease; /* Smooth background color transition */
+            margin: 5px; /* Space between buttons */
+        }
+
+        .btn:hover {
+            background-color: #0056b3; /* Darker shade on hover */
+        }
+
+        #intensity-submit {
+            background-color: rgb(99, 144, 31);
+        }
+
+        #closeIntensityPopup {
+            background-color: #dc3545; /* Red color for Cancel button */
+        }
+
+        #closeIntensityPopup:hover {
+            background-color: #c82333; /* Darker red on hover */
+        }
+        #errorOverlay {
+            display: none; /* Initially hidden */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            padding-top: 20%;
+            z-index: 10000;
+        }
+        /* Disable interaction when overlay is shown */
+        body.error-active {
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .flag-disable {
+            opacity: 0.5;               /* Gray out the flag */
+            pointer-events: none;        /* Disable clicking */
+            cursor: not-allowed;         /* Show not-allowed cursor */
+        }
+
+    </style>
+</head>
+<body>
+    <div id="errorOverlay">
+        ERROR OCCURRED. CALL TECHNICAL SUPPORT.
+    </div>
+
+    <div class="inactive-overlay">
+        <div class="s-restart" id="s-restart">
+            <strong><h3 style="color:white;">Please wait a few minutes</h3></strong>
+            <strong><h1 style="color:red;">Kérem várjon egy pár percet</h1></strong>
+            <strong><h3 style="color:white;">Prosím počkajte pár minút</h3></strong>
+        </div>
+
+        <p id="time-remain-1"></p>
+        
+        <h2 id="time-remain"></h2>
+        
+        <p id="time-remain-2"></p>
+    </div>
+    <header>
+        <div class="language-selector">
+            <img src="img/sk.png" alt="Slovak" id="sk" class="flag">
+            <img src="img/hu.png" alt="Hungarian" id="hu" class="flag">
+            <img src="img/en.png" alt="English" id="en" class="flag">
+        </div>
+    </header>
+    <p id="uptime-server"></p>
+    <main>
+        <div class="category">
+            <h2 id="control-title">Lámpa vezérlés</h2>
+            <div class="buttons">
+                <button class="button set-1" id="set-1">1. Csarnok <span id="status-1" class="status-text"></span></button>
+                <button class="button set-2" id="set-2">2. Csarnok <span id="status-2" class="status-text"></span></button>
+                <button class="button set-3" id="set-3">3. Csarnok <span id="status-3" class="status-text"></span></button>
+                <button class="button set-4" id="set-4">Raktár <span id="status-4" class="status-text"></span></button>
+            </div>
+            <div class="buttons">
+                <button class="def-btn" id="set-def">Alapértelmezett beállítása</button>
+            </div>
+        </div>
+        <div class="category">
+            <h2 id="window-title">Ablak vezérlés</h2>
+            <p id="allWinStatus"></p>
+            <p id="windowsAutoStatus"></p>
+            <div class="buttons">
+                <button class="button open" id="hall-1-open">Nyitás 1. Csarnok <span id="hall-1-status-open" class="status-text"></span></button>
+                <button class="button open" id="hall-2-open">Nyitás 2. Csarnok <span id="hall-2-status-open" class="status-text"></span></button>
+                <button class="button open" id="hall-3-open">Nyitás 3. Csarnok <span id="hall-3-status-open" class="status-text"></span></button>
+                <button class="button open" id="hall-4-open">Nyitás Raktár <span id="hall-4-status-open" class="status-text"></span></button>
+            </div>
+            <div class="buttons">
+                <button class="button close" id="hall-1-close">Zárás 1. Csarnok</button>
+                <button class="button close" id="hall-2-close">Zárás 2. Csarnok</button>
+                <button class="button close" id="hall-3-close">Zárás 3. Csarnok</button>
+                <button class="button close" id="hall-4-close">Zárás Raktár</button>
+            </div>
+        </div>
+    </main>
+
+    <div class="intensity-overlay" id="intensity-overlay">
+        <div class="intensity-container" id="intensity-container">
+            <h2 id="intensity-title">Lámpa Fényerő Beállítás</h2>
+            <input type="range" min="0" max="100" value="50" step="10" class="slider" id="intensity-slider">
+            <span id="intensity-value">50%</span>
+            <div class="button-group">
+                <button id="intensity-submit" class="btn">Állítani</button>
+                <button id="closeIntensityPopup" class="btn">Mégse</button>
+            </div>
+        </div>
+    </div>
+    
+
+    <div class="overlay">
+        <div class="loading-container" id="loading-container">
+            <div class="loading"></div>
+            <div id="loading-text">Loading</div>
+        </div>
+    </div>
+    
+    <script src="js/script.js"></script>
+</body>
+</html>
